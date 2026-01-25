@@ -1,0 +1,15 @@
+{
+  "name": "cherry-blossom-memories",
+  "version": "1.0.0",
+  "description": "郑涵予 & 张远欣 的浪漫时光回忆网站",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "cd backend && npm start"
+  },
+  "keywords": ["cherry-blossom", "memories", "couple"],
+  "author": "郑涵予 & 张远欣"
+}
