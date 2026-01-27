@@ -4,8 +4,10 @@ import Header from './components/UI/Header';
 import Timeline from './components/Timeline/Timeline';
 import PhotoUpload from './components/Upload/PhotoUpload';
 import PhotoModal from './components/UI/PhotoModal';
+import AudioUpload from './components/UI/AudioUpload';
+import MusicPlayer from './components/UI/MusicPlayer';
 import HeartEffect from './components/UI/HeartEffect';
-import LoadingSpinner from './components/UI/LoadingSpinner';
+import PasswordProtection from './components/UI/PasswordProtection';
 
 // 照片卡片组件
 function PhotoCard({ photo, index, total, onClick, x, y, width, height }) {
@@ -81,18 +83,24 @@ function PhotoCard({ photo, index, total, onClick, x, y, width, height }) {
  */
 export default function App() {
   const [isReady, setIsReady] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+
   const {
     photos,
     selectedMonth,
     selectedYear,
     isUploadModalOpen,
     isPhotoModalOpen,
+    isAudioUploadModalOpen,
     selectedPhoto,
     fetchPhotos,
+    fetchAudios,
     openUploadModal,
     closeUploadModal,
     openPhotoModal,
     closePhotoModal,
+    openAudioUploadModal,
+    closeAudioUploadModal,
     uploadPhoto,
     updatePhoto,
     deletePhoto,
@@ -101,10 +109,62 @@ export default function App() {
     setSelectedYear
   } = useStore();
 
-  // 初始化加载照片
+  // 检查是否已解锁
   useEffect(() => {
-    fetchPhotos().then(() => setIsReady(true)).catch(() => setIsReady(true));
+    const unlocked = sessionStorage.getItem('cherry_unlocked') === 'true';
+    setIsUnlocked(unlocked);
   }, []);
+
+  // 初始化加载数据
+  useEffect(() => {
+    if (isUnlocked) {
+      // 从2023年10月开始
+      setSelectedYear(2023);
+      setSelectedMonth(10);
+
+      Promise.all([
+        fetchPhotos(),
+        fetchAudios()
+      ]).then(() => setIsReady(true)).catch(() => setIsReady(true));
+    }
+  }, [isUnlocked, fetchPhotos, fetchAudios, setSelectedYear, setSelectedMonth]);
+
+  const handleUnlock = () => {
+    setIsUnlocked(true);
+  };
+
+  // 未解锁显示密码输入
+  if (!isUnlocked) {
+    return <PasswordProtection onUnlock={handleUnlock} />;
+  }
+
+  // 加载中
+  if (!isReady) {
+    return (
+      <div className="h-screen w-screen bg-gradient-to-br from-pink-50 via-pink-100 to-pink-50 flex items-center justify-center relative overflow-hidden">
+        {/* 加载时的樱花装饰 */}
+        <div className="absolute inset-0 pointer-events-none">
+          {[...Array(15)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute text-3xl opacity-30"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animation: `float ${3 + Math.random() * 2}s ease-in-out infinite`
+              }}
+            >
+              🌸
+            </div>
+          ))}
+        </div>
+        <div className="text-center">
+          <div className="text-6xl mb-4 animate-bounce">🌸</div>
+          <p className="text-pink-500 text-lg">正在加载美好回忆...</p>
+        </div>
+      </div>
+    );
+  }
 
   // 获取月份统计
   const monthStats = getMonthStats();
@@ -172,7 +232,7 @@ export default function App() {
     await uploadPhoto(file, date, caption);
   };
 
-  // 处理照片更新（备注和日期）
+  // 处理照片更新
   const handleUpdate = async (id, updates) => {
     await updatePhoto(id, updates);
   };
@@ -182,139 +242,120 @@ export default function App() {
     await deletePhoto(id);
   };
 
-  if (!isReady) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-pink-100 to-pink-50 flex items-center justify-center relative overflow-hidden">
-        {/* 加载时的樱花装饰 */}
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(15)].map((_, i) => (
+  const photoPositions = getPhotoPositions();
+
+  return (
+    <div className="h-screen w-screen relative overflow-hidden bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100">
+      <div className="h-full flex flex-col">
+        {/* 樱花飘落动画 */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+          {[...Array(30)].map((_, i) => (
             <div
               key={i}
-              className="absolute text-3xl opacity-30"
+              className="absolute"
               style={{
                 left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float ${3 + Math.random() * 2}s ease-in-out infinite`
+                fontSize: `${12 + Math.random() * 16}px`,
+                opacity: 0.4 + Math.random() * 0.4,
+                animation: `fall ${6 + Math.random() * 6}s linear infinite`,
+                animationDelay: `${Math.random() * 8}s`
               }}
             >
               🌸
             </div>
           ))}
         </div>
-        <LoadingSpinner text="正在加载美好回忆..." />
-      </div>
-    );
-  }
 
-  const photoPositions = getPhotoPositions();
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 relative overflow-hidden">
-      {/* 樱花飘落动画 - 增加数量 */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        {[...Array(30)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute"
-            style={{
-              left: `${Math.random() * 100}%`,
-              fontSize: `${12 + Math.random() * 16}px`,
-              opacity: 0.4 + Math.random() * 0.4,
-              animation: `fall ${6 + Math.random() * 6}s linear infinite`,
-              animationDelay: `${Math.random() * 8}s`
-            }}
-          >
-            🌸
-          </div>
-        ))}
-      </div>
-
-      {/* 漂浮爱心装饰 */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        {[...Array(10)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute text-lg"
-            style={{
-              left: `${10 + Math.random() * 80}%`,
-              top: `${10 + Math.random() * 80}%`,
-              opacity: 0.2 + Math.random() * 0.3,
-              animation: `float ${4 + Math.random() * 3}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 5}s`
-            }}
-          >
-            💕
-          </div>
-        ))}
-      </div>
-
-      {/* 闪光星星效果 */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute text-sm"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `sparkle ${2 + Math.random() * 2}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 3}s`
-            }}
-          >
-            ✨
-          </div>
-        ))}
-      </div>
-
-      {/* 装饰性圆圈背景 */}
-      <div className="fixed top-20 left-10 w-32 h-32 rounded-full bg-pink-200/20 blur-3xl pointer-events-none" />
-      <div className="fixed top-40 right-20 w-48 h-48 rounded-full bg-rose-200/20 blur-3xl pointer-events-none" />
-      <div className="fixed bottom-40 left-20 w-40 h-40 rounded-full bg-pink-300/20 blur-3xl pointer-events-none" />
-      <div className="fixed bottom-20 right-10 w-36 h-36 rounded-full bg-rose-300/20 blur-3xl pointer-events-none" />
-
-      {/* 头部 */}
-      <Header onUploadClick={openUploadModal} />
-
-      {/* 主场景区域 */}
-      <div className="relative h-[65vh] flex items-center justify-center z-10">
-        {/* 中心装饰 */}
-        <div className="absolute w-32 h-32 rounded-full bg-gradient-to-br from-pink-200 to-rose-200 blur-2xl opacity-50 pointer-events-none" />
-
-        {/* 照片卡片 */}
-        {photoPositions.map(({ photo, x, y, width, height }) => (
-          <PhotoCard
-            key={photo._id}
-            photo={photo}
-            index={photoPositions.findIndex(p => p.photo._id === photo._id)}
-            total={photoPositions.length}
-            onClick={handlePhotoClick}
-            x={x}
-            y={y}
-            width={width}
-            height={height}
-          />
-        ))}
-
-        {/* 提示文字 */}
-        {photoPositions.length === 0 && (
-          <div className="absolute bottom-20 text-center z-10">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
-              <p className="text-2xl mb-2">🌸</p>
-              <p className="text-pink-500 text-lg font-medium">这个月份还没有照片哦~</p>
-              <p className="text-pink-400 text-sm mt-2">点击右上角"上传"按钮添加回忆</p>
+        {/* 漂浮爱心装饰 */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+          {[...Array(10)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute text-lg"
+              style={{
+                left: `${10 + Math.random() * 80}%`,
+                top: `${10 + Math.random() * 80}%`,
+                opacity: 0.2 + Math.random() * 0.3,
+                animation: `float ${4 + Math.random() * 3}s ease-in-out infinite`,
+                animationDelay: `${Math.random() * 5}s`
+              }}
+            >
+              💕
             </div>
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
 
-      {/* 时间轴 */}
-      <Timeline
-        selectedMonth={selectedMonth}
-        selectedYear={selectedYear}
-        onMonthChange={handleMonthChange}
-        onYearChange={setSelectedYear}
-        monthStats={monthStats}
-      />
+        {/* 闪光星星效果 */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute text-sm"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animation: `sparkle ${2 + Math.random() * 2}s ease-in-out infinite`,
+                animationDelay: `${Math.random() * 3}s`
+              }}
+            >
+              ✨
+            </div>
+          ))}
+        </div>
+
+        {/* 装饰性圆圈背景 */}
+        <div className="fixed top-20 left-10 w-32 h-32 rounded-full bg-pink-200/20 blur-3xl pointer-events-none" />
+        <div className="fixed top-40 right-20 w-48 h-48 rounded-full bg-rose-200/20 blur-3xl pointer-events-none" />
+        <div className="fixed bottom-40 left-20 w-40 h-40 rounded-full bg-pink-300/20 blur-3xl pointer-events-none" />
+        <div className="fixed bottom-20 right-10 w-36 h-36 rounded-full bg-rose-300/20 blur-3xl pointer-events-none" />
+
+        {/* 头部 */}
+        <Header
+          onUploadClick={openUploadModal}
+          onAudioUploadClick={openAudioUploadModal}
+        />
+
+        {/* 主场景区域 */}
+        <div className="relative flex-1 flex items-center justify-center z-10 min-h-0">
+          {/* 中心装饰 */}
+          <div className="absolute w-32 h-32 rounded-full bg-gradient-to-br from-pink-200 to-rose-200 blur-2xl opacity-50 pointer-events-none" />
+
+          {/* 照片卡片 */}
+          {photoPositions.map(({ photo, x, y, width, height }) => (
+            <PhotoCard
+              key={photo._id}
+              photo={photo}
+              index={photoPositions.findIndex(p => p.photo._id === photo._id)}
+              total={photoPositions.length}
+              onClick={handlePhotoClick}
+              x={x}
+              y={y}
+              width={width}
+              height={height}
+            />
+          ))}
+
+          {/* 提示文字 */}
+          {photoPositions.length === 0 && (
+            <div className="absolute bottom-20 text-center z-10">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
+                <p className="text-2xl mb-2">🌸</p>
+                <p className="text-pink-500 text-lg font-medium">这个月份还没有照片哦~</p>
+                <p className="text-pink-400 text-sm mt-2">点击右上角"上传"按钮添加回忆</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 时间轴 */}
+        <Timeline
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
+          onMonthChange={handleMonthChange}
+          onYearChange={setSelectedYear}
+          monthStats={monthStats}
+        />
+      </div>
 
       {/* 上传弹窗 */}
       <PhotoUpload
@@ -331,6 +372,16 @@ export default function App() {
         onUpdate={handleUpdate}
         onDelete={handleDelete}
       />
+
+      {/* 音频上传弹窗 */}
+      <AudioUpload
+        isOpen={isAudioUploadModalOpen}
+        onClose={closeAudioUploadModal}
+        onUploadSuccess={fetchAudios}
+      />
+
+      {/* 音乐播放器 */}
+      <MusicPlayer />
 
       {/* 心形交互效果 */}
       <HeartEffect />

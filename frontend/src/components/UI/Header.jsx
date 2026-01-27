@@ -1,13 +1,12 @@
-import { Upload, Settings, Heart, Sparkles } from 'lucide-react';
+import { Upload, Music } from 'lucide-react';
 
 /**
- * 头部组件 - 标题和控制按钮
+ * 头部组�� - 标题和控制按钮
  */
 export default function Header({
   title = '樱花树时光机',
   onUploadClick,
-  onSettingsClick,
-  isMenuOpen
+  onAudioUploadClick
 }) {
   return (
     <header className="fixed top-0 left-0 right-0 z-40">
@@ -45,6 +44,16 @@ export default function Header({
 
           {/* 操作按钮 */}
           <div className="flex items-center gap-3">
+            {/* 音乐上传按钮 */}
+            <button
+              onClick={onAudioUploadClick}
+              className="group p-2.5 bg-purple-500/80 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 relative"
+              title="上传音乐"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Music className="relative text-white" size={20} />
+            </button>
+
             <button
               onClick={onUploadClick}
               className="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-pink-400 to-rose-400 text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 relative overflow-hidden"
@@ -55,14 +64,6 @@ export default function Header({
                 <span className="font-medium">上传</span>
                 <span>📷</span>
               </span>
-            </button>
-
-            <button
-              onClick={onSettingsClick}
-              className="group p-2.5 bg-white/90 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-100 to-rose-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-              <Sparkles className="relative text-cherry-bright" size={20} />
             </button>
           </div>
         </div>

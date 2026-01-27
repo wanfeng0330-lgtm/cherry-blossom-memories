@@ -11,17 +11,7 @@ const api = axios.create({
   }
 });
 
-// 请求拦截器
-api.interceptors.request.use(
-  (config) => {
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// 响应拦截器
+// Response interceptor
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
@@ -53,6 +43,26 @@ export const photoAPI = {
 
   // 删除照片
   delete: (id) => api.delete(`${API_ENDPOINTS.photos}/${id}`)
+};
+
+/**
+ * 音频相关API
+ */
+export const audioAPI = {
+  // 获取所有音频
+  getAll: () => api.get('/api/audio'),
+
+  // 获取单个音频
+  getById: (id) => api.get(`/api/audio/${id}`),
+
+  // 创建音频记录
+  create: (data) => api.post('/api/audio', data),
+
+  // 更新音频
+  update: (id, data) => api.put(`/api/audio/${id}`, data),
+
+  // 删除音频
+  delete: (id) => api.delete(`/api/audio/${id}`)
 };
 
 /**
@@ -102,6 +112,49 @@ export const uploadAPI = {
     });
   },
 
+  // 上传音频文件
+  uploadAudio: async (file, onProgress) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onprogress = (e) => {
+        if (onProgress && e.lengthComputable) {
+          const percentCompleted = Math.round((e.loaded / e.total) * 100);
+          onProgress(percentCompleted);
+        }
+      };
+
+      reader.onload = async () => {
+        try {
+          const arrayBuffer = reader.result;
+          const uint8Array = new Uint8Array(arrayBuffer);
+
+          // 发送文件数据
+          const response = await fetch(`${API_URL}/api/upload/audio`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': file.type
+            },
+            body: uint8Array
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            resolve(result);
+          } else {
+            reject(new Error(result.message || '上传失败'));
+          }
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      reader.onerror = () => reject(new Error('文件读取失败'));
+      reader.readAsArrayBuffer(file);
+    });
+  },
+
   // 批量上传
   uploadMultiple: async (files, onProgress) => {
     const promises = files.map((file, index) =>
@@ -118,7 +171,7 @@ export const uploadAPI = {
 };
 
 /**
- * 获取七牛云上传Token
+ * 获取上传Token
  */
 export const getUploadToken = () => api.get('/api/upload/token');
 

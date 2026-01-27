@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { photoAPI, uploadAPI } from '../utils/api';
+import { photoAPI, uploadAPI, audioAPI } from '../utils/api';
 
 /**
  * 樱花树时光机 - 全局状态管理
@@ -10,8 +10,8 @@ export const useStore = create(
     (set, get) => ({
       // ==================== 状态 ====================
       photos: [],
-      selectedMonth: new Date().getMonth() + 1,
-      selectedYear: new Date().getFullYear(),
+      selectedMonth: 10,  // 从2023年10月开始
+      selectedYear: 2023,
       isLoading: false,
       error: null,
       uploadProgress: 0,
@@ -20,8 +20,12 @@ export const useStore = create(
       isUploadModalOpen: false,
       isPhotoModalOpen: false,
       selectedPhoto: null,
+      isAudioUploadModalOpen: false,
+
+      // 音频状态
+      audios: [],
       isPlaying: false,
-      currentTrack: null,
+      currentTrackIndex: 0,
 
       // ==================== 照片操作 ====================
       fetchPhotos: async () => {
@@ -113,6 +117,68 @@ export const useStore = create(
         }
       },
 
+      // ==================== 音频操作 ====================
+      fetchAudios: async () => {
+        set({ error: null });
+        try {
+          const data = await audioAPI.getAll();
+          set({ audios: data.data || data });
+        } catch (error) {
+          set({ error: error.message });
+        }
+      },
+
+      uploadAudio: async (file, title, artist) => {
+        set({ isLoading: true, uploadProgress: 0, error: null });
+        try {
+          // 上传音频文件
+          const uploadResult = await uploadAPI.uploadAudio(file, (progress) => {
+            set({ uploadProgress: progress });
+          });
+
+          // 创建音频记录
+          const audioData = {
+            title,
+            artist: artist || '未知艺术家',
+            url: uploadResult.data.url,
+            duration: 0,
+            metadata: {
+              size: uploadResult.data.size,
+              mimeType: uploadResult.data.mimeType,
+              format: uploadResult.data.format
+            }
+          };
+
+          const newAudio = await audioAPI.create(audioData);
+
+          // 重新获取所有音频
+          await get().fetchAudios();
+
+          set({ isLoading: false, uploadProgress: 100 });
+
+          return newAudio.data || newAudio;
+        } catch (error) {
+          set({ error: error.message, isLoading: false, uploadProgress: 0 });
+          throw error;
+        }
+      },
+
+      deleteAudio: async (id) => {
+        set({ isLoading: true, error: null });
+        try {
+          await audioAPI.delete(id);
+          set((state) => ({
+            audios: state.audios.filter((a) => a._id !== id),
+            currentTrackIndex: 0,
+            isPlaying: false,
+            isLoading: false
+          }));
+        } catch (error) {
+          set({ error: error.message, isLoading: false });
+          throw error;
+        }
+      },
+
       // ==================== 月份选择 ====================
       setSelectedMonth: (month) => {
         set({ selectedMonth: month });
@@ -129,10 +195,13 @@ export const useStore = create(
       openPhotoModal: (photo) => set({ isPhotoModalOpen: true, selectedPhoto: photo }),
       closePhotoModal: () => set({ isPhotoModalOpen: false, selectedPhoto: null }),
 
+      openAudioUploadModal: () => set({ isAudioUploadModalOpen: true }),
+      closeAudioUploadModal: () => set({ isAudioUploadModalOpen: false }),
+
       // ==================== 音乐控制 ====================
       toggleMusic: () => set((state) => ({ isPlaying: !state.isPlaying })),
       setPlaying: (playing) => set({ isPlaying: playing }),
-      setCurrentTrack: (track) => set({ currentTrack: track }),
+      setCurrentTrackIndex: (index) => set({ currentTrackIndex: index }),
 
       // ==================== 错误处理 ====================
       clearError: () => set({ error: null }),
@@ -171,7 +240,7 @@ export const useStore = create(
         selectedMonth: state.selectedMonth,
         selectedYear: state.selectedYear,
         isPlaying: state.isPlaying,
-        currentTrack: state.currentTrack
+        currentTrackIndex: state.currentTrackIndex
       })
     }
   )

@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { MONTHS } from '../../utils/constants';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+// 固定起始日期：2023年10月
+const START_YEAR = 2023;
+const START_MONTH = 10;
+
 /**
  * 时间轴组件 - 横向月份滚动条
  */
@@ -15,11 +19,13 @@ export default function Timeline({
   const [yearInputMode, setYearInputMode] = useState(false);
   const [tempYear, setTempYear] = useState(selectedYear);
 
-  // 2023年只显示10月开始的月份
+  // 获取可见月份 - 从2023年10月开始
   const getVisibleMonths = () => {
-    if (selectedYear === 2023) {
-      return MONTHS.slice(9);
+    if (selectedYear === START_YEAR) {
+      // 2023年只显示从10月开始的月份
+      return MONTHS.slice(START_MONTH - 1);
     }
+    // 其他年份显示全部月份
     return MONTHS;
   };
 
@@ -28,38 +34,52 @@ export default function Timeline({
   // 年份增减
   const handleYearChange = (delta) => {
     const newYear = selectedYear + delta;
-    if (newYear >= 2023 && newYear <= 2030) {
-      if (onYearChange) {
-        onYearChange(newYear);
+    if (newYear >= START_YEAR) {
+      onYearChange(newYear);
+      // 如果切换到起始年份，月份设为10月
+      if (newYear === START_YEAR) {
+        onMonthChange(START_MONTH, newYear);
       } else {
         onMonthChange(selectedMonth, newYear);
       }
     }
   };
 
-  // 快速跳转年份
-  const handleYearInput = (e) => {
+  // 选择月份
+  const handleMonthSelect = (monthNum) => {
+    onMonthChange(monthNum, selectedYear);
+  };
+
+  // 年份输入确认
+  const handleYearSubmit = (e) => {
     e.preventDefault();
     const year = parseInt(tempYear);
-    if (year >= 2023 && year <= 2030) {
-      if (onYearChange) {
-        onYearChange(year);
-      } else {
-        onMonthChange(selectedMonth, year);
+    if (year >= START_YEAR && year <= START_YEAR + 100) {
+      onYearChange(year);
+      if (year === START_YEAR) {
+        onMonthChange(START_MONTH, year);
       }
-      setYearInputMode(false);
     }
+    setYearInputMode(false);
+  };
+
+  // 获取当前选中月份的显示名称
+  const getSelectedMonthName = () => {
+    if (selectedYear === START_YEAR && selectedMonth < START_MONTH) {
+      return MONTHS[START_MONTH - 1];
+    }
+    return MONTHS[selectedMonth - 1];
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-white/95 via-white/90 to-transparent backdrop-blur-sm">
+    <div className="z-50 bg-gradient-to-t from-white/95 via-white/90 to-transparent backdrop-blur-sm">
       <div className="max-w-5xl mx-auto px-4 py-6">
         {/* 标题和统计 */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <span className="text-2xl">🌸</span>
             <h3 className="text-cherry-dark font-bold text-lg">
-              {selectedYear}年 {visibleMonths[selectedYear === 2023 ? selectedMonth - 10 : selectedMonth - 1] >= 0 ? visibleMonths[selectedYear === 2023 ? selectedMonth - 10 : selectedMonth - 1] : MONTHS[selectedMonth - 1]}
+              {selectedYear}年 {getSelectedMonthName()}
             </h3>
           </div>
           <div className="flex items-center gap-2 bg-white/80 rounded-full px-4 py-1 shadow-md">
@@ -70,157 +90,115 @@ export default function Timeline({
           </div>
         </div>
 
+        {/* 年份选择 */}
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <button
+            onClick={() => handleYearChange(-1)}
+            disabled={selectedYear <= START_YEAR}
+            className="p-2 rounded-full hover:bg-pink-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft size={20} className="text-cherry-dark" />
+          </button>
+
+          {yearInputMode ? (
+            <form onSubmit={handleYearSubmit} className="flex items-center gap-2">
+              <input
+                type="number"
+                value={tempYear}
+                onChange={(e) => setTempYear(e.target.value)}
+                className="w-20 px-3 py-1 border-2 border-pink-200 rounded-full text-center focus:border-pink-400 focus:outline-none"
+                min={START_YEAR}
+                autoFocus
+              />
+              <button
+                type="submit"
+                className="px-3 py-1 bg-pink-400 text-white rounded-full text-sm hover:bg-pink-500"
+              >
+                确定
+              </button>
+            </form>
+          ) : (
+            <button
+              onClick={() => {
+                setTempYear(selectedYear);
+                setYearInputMode(true);
+              }}
+              className="px-6 py-2 bg-white/80 rounded-full shadow-md font-medium text-cherry-dark hover:bg-pink-50 transition-colors"
+            >
+              {selectedYear}
+            </button>
+          )}
+
+          <button
+            onClick={() => handleYearChange(1)}
+            className="p-2 rounded-full hover:bg-pink-100 transition-colors"
+          >
+            <ChevronRight size={20} className="text-cherry-dark" />
+          </button>
+        </div>
+
         {/* 月份滚动条 */}
         <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-thin scrollbar-thumb-cherry-pink scrollbar-track-cherry-light">
           {visibleMonths.map((month, index) => {
-            const monthNum = selectedYear === 2023 ? index + 10 : index + 1;
+            const monthNum = selectedYear === START_YEAR ? index + START_MONTH : index + 1;
             const statsIndex = monthNum - 1;
             const count = monthStats[statsIndex]?.count || 0;
-            const isActive = selectedMonth === monthNum;
+            const isSelected = selectedMonth === monthNum;
 
             return (
               <button
-                key={monthNum}
-                onClick={() => onMonthChange(monthNum)}
+                key={month}
+                onClick={() => handleMonthSelect(monthNum)}
                 className={`
-                  group flex-shrink-0 px-5 py-3 rounded-2xl transition-all duration-300 relative overflow-hidden
-                  ${isActive
-                    ? 'bg-gradient-to-r from-pink-400 to-rose-400 text-white shadow-lg shadow-pink-200 scale-105'
-                    : 'bg-white/80 hover:bg-white hover:scale-105 shadow-md'
+                  relative flex-shrink-0 px-4 py-2 rounded-xl transition-all duration-300
+                  ${isSelected
+                    ? 'bg-gradient-to-r from-pink-400 to-rose-400 text-white shadow-lg scale-110'
+                    : 'bg-white/80 text-cherry-dark hover:bg-pink-100 shadow-md'
                   }
                 `}
               >
-                {!isActive && count > 0 && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-pink-100 to-rose-100 opacity-50" />
+                {/* 选中时的光晕 */}
+                {isSelected && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-pink-100 to-rose-100 opacity-50 rounded-xl animate-pulse" />
                 )}
 
-                <div className="relative text-center">
-                  <div className={`text-sm font-bold ${isActive ? 'text-white' : 'text-cherry-dark'}`}>
-                    {month}
-                  </div>
-                  {count > 0 && (
-                    <div className={`text-xs mt-1 flex items-center justify-center gap-1 ${isActive ? 'text-white/90' : 'text-pink-400'}`}>
-                      <span>💕</span>
-                      <span>{count}张</span>
-                    </div>
-                  )}
-                  {count === 0 && (
-                    <div className={`text-xs mt-1 ${isActive ? 'text-white/60' : 'text-pink-300'}`}>
-                      -
-                    </div>
-                  )}
-                </div>
+                <span className="relative z-10 text-sm font-medium">{month}</span>
+
+                {/* 照片数量 */}
+                {count > 0 && (
+                  <span className={`
+                    absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold
+                    ${isSelected ? 'bg-white text-pink-500' : 'bg-pink-400 text-white'}
+                  `}>
+                    {count > 9 ? '9+' : count}
+                  </span>
+                )}
               </button>
             );
           })}
         </div>
 
-        {/* 年份控制 */}
-        <div className="flex items-center justify-center gap-3 mt-3">
-          {/* 减少年份按钮 */}
-          <button
-            onClick={() => handleYearChange(-1)}
-            disabled={selectedYear <= 2023}
-            className={`
-              w-10 h-10 rounded-full flex items-center justify-center transition-all
-              ${selectedYear <= 2023
-                ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
-                : 'bg-white hover:bg-pink-50 hover:scale-110 text-cherry-dark shadow-md cursor-pointer'
-              }
-            `}
-          >
-            <ChevronLeft size={18} />
-          </button>
-
-          {/* 年份显示/输入 */}
-          {yearInputMode ? (
-            <form onSubmit={handleYearInput} className="flex items-center gap-2">
-              <input
-                type="number"
-                value={tempYear}
-                onChange={(e) => setTempYear(e.target.value)}
-                min={2023}
-                max={2030}
-                className="w-20 px-2 py-1 rounded-full border-2 border-cherry-pink text-center font-bold text-cherry-dark focus:outline-none"
-                autoFocus
-              />
-              <button
-                type="submit"
-                className="px-3 py-1 bg-cherry-pink text-white rounded-full text-sm hover:bg-cherry-bright"
-              >
-                ✓
-              </button>
-              <button
-                onClick={() => {
-                  setYearInputMode(false);
-                  setTempYear(selectedYear);
-                }}
-                className="px-3 py-1 bg-gray-200 text-gray-600 rounded-full text-sm hover:bg-gray-300"
-              >
-                ✕
-              </button>
-            </form>
-          ) : (
-            <div
+        {/* 快速年份跳转 */}
+        <div className="flex justify-center gap-2 mt-2 flex-wrap">
+          {Array.from({ length: 10 }, (_, i) => START_YEAR + i).map((year) => (
+            <button
+              key={year}
               onClick={() => {
-                setTempYear(selectedYear);
-                setYearInputMode(true);
+                onYearChange(year);
+                if (year === START_YEAR) {
+                  onMonthChange(START_MONTH, year);
+                }
               }}
-              className="cursor-pointer px-4 py-1 rounded-full hover:bg-white/80 transition-all"
+              className={`px-3 py-1 rounded-full text-xs transition-colors ${
+                selectedYear === year
+                  ? 'bg-pink-400 text-white'
+                  : 'bg-white/60 text-cherry-dark hover:bg-pink-100'
+              }`}
             >
-              <span className="text-lg font-bold text-cherry-dark">{selectedYear}</span>
-              <span className="text-xs text-cherry-pink ml-1">▾</span>
-            </div>
-          )}
-
-          {/* 增加年份按钮 */}
-          <button
-            onClick={() => handleYearChange(1)}
-            disabled={selectedYear >= 2030}
-            className={`
-              w-10 h-10 rounded-full flex items-center justify-center transition-all
-              ${selectedYear >= 2030
-                ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
-                : 'bg-white hover:bg-pink-50 hover:scale-110 text-cherry-dark shadow-md cursor-pointer'
-              }
-            `}
-          >
-            <ChevronRight size={18} />
-          </button>
+              {year}
+            </button>
+          ))}
         </div>
-
-        {/* 快速年份选择 */}
-        {!yearInputMode && (
-          <div className="flex justify-center gap-2 mt-2 flex-wrap">
-            {[2023, 2024, 2025, 2026].map(year => (
-              <button
-                key={year}
-                onClick={() => {
-                  if (onYearChange) {
-                    onYearChange(year);
-                  } else {
-                    onMonthChange(selectedMonth, year);
-                  }
-                }}
-                className={`
-                  px-4 py-1.5 rounded-full text-sm font-medium transition-all relative overflow-hidden
-                  ${selectedYear === year
-                    ? 'bg-gradient-to-r from-pink-400 to-rose-400 text-white shadow-md scale-105'
-                    : 'bg-white/80 hover:bg-white hover:scale-105 shadow'
-                  }
-                `}
-              >
-                {selectedYear === year && (
-                  <div className="absolute inset-0 bg-white/20" />
-                )}
-                <span className="relative flex items-center gap-1">
-                  {selectedYear === year && <span>🌸</span>}
-                  {year}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* 底部装饰线 */}

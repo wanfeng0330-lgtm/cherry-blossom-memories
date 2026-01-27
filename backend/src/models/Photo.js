@@ -19,12 +19,10 @@ const photoSchema = new mongoose.Schema({
     default: Date.now
   },
   year: {
-    type: Number,
-    required: true
+    type: Number
   },
   month: {
     type: Number,
-    required: true,
     min: 1,
     max: 12
   },
