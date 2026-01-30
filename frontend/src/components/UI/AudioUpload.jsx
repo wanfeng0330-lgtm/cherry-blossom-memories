@@ -118,21 +118,20 @@ export default function AudioUpload({ isOpen, onClose, onUploadSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2" onClick={onClose}>
       <div
-        className="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden relative"
+        className="bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-md mx-2 md:mx-4 max-h-[95vh] overflow-hidden relative flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-br from-purple-400 to-pink-400">
+        <div className="absolute top-0 left-0 right-0 h-24 md:h-32 bg-gradient-to-br from-purple-400 to-pink-400 flex-shrink-0">
           <div className="absolute inset-0 opacity-30">
-            {[...Array(20)].map((_, i) => (
+            {[...Array(15)].map((_, i) => (
               <div
                 key={i}
-                className="absolute text-white/50"
+                className="absolute text-white/50 text-xs"
                 style={{
                   left: Math.random() * 100 + '%',
                   top: Math.random() * 100 + '%',
-                  fontSize: '12px',
                   animation: 'float 3s ease-in-out infinite'
                 }}
               >
@@ -144,27 +143,27 @@ export default function AudioUpload({ isOpen, onClose, onUploadSuccess }) {
 
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors"
+          className="absolute top-3 right-3 md:top-4 md:right-4 z-10 p-1.5 md:p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors text-white text-sm"
         >
           ✕
         </button>
 
-        <div className="relative pt-20 px-8 pb-8">
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-3">
-              <Music size={32} className="text-purple-500" />
+        <div className="relative pt-14 md:pt-20 px-4 md:px-8 pb-4 md:pb-8 overflow-y-auto flex-1">
+          <div className="text-center mb-4 md:mb-6">
+            <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-white rounded-full shadow-lg mb-2 md:mb-3">
+              <Music size={24} md:size={32} className="text-purple-500" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-800">
               上传音乐
             </h2>
-            <p className="text-gray-500 text-sm mt-1">
+            <p className="text-gray-500 text-xs md:text-sm mt-1">
               为你们的回忆添加背景音乐
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
                 音频文件
               </label>
               <div className="relative">
@@ -178,40 +177,40 @@ export default function AudioUpload({ isOpen, onClose, onUploadSuccess }) {
                 />
                 <label
                   htmlFor="audio-file-input"
-                  className={`flex items-center justify-center gap-2 w-full px-4 py-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
+                  className={`flex items-center justify-center gap-2 w-full px-3 md:px-4 py-4 md:py-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
                     file
                       ? 'border-purple-300 bg-purple-50'
                       : 'border-gray-300 hover:border-purple-300'
                   }`}
                 >
                   {file ? (
-                    <span className="text-sm text-purple-600 truncate">
+                    <span className="text-xs md:text-sm text-purple-600 truncate">
                       🎵 {file.name}
                     </span>
                   ) : (
                     <>
-                      <Upload size={20} className="text-gray-400" />
-                      <span className="text-sm text-gray-500">
+                      <Upload size={16} md:size={20} className="text-gray-400" />
+                      <span className="text-xs md:text-sm text-gray-500">
                         点击选择音频文件
                       </span>
                     </>
                   )}
                 </label>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-[10px] md:text-xs text-gray-500 mt-1">
                 支持 MP3, WAV, OGG, M4A 格式，最大20MB
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
                 歌曲标题
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:border-purple-400 focus:outline-none transition-colors"
+                className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-purple-200 rounded-xl focus:border-purple-400 focus:outline-none transition-colors text-sm md:text-base"
                 placeholder="输入歌曲标题"
                 required
                 disabled={uploading}
@@ -219,32 +218,32 @@ export default function AudioUpload({ isOpen, onClose, onUploadSuccess }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
                 艺术家（可选）
               </label>
               <input
                 type="text"
                 value={artist}
                 onChange={(e) => setArtist(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:border-purple-400 focus:outline-none transition-colors"
+                className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-purple-200 rounded-xl focus:border-purple-400 focus:outline-none transition-colors text-sm md:text-base"
                 placeholder="例如：周杰伦"
                 disabled={uploading}
               />
             </div>
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+              <div className="p-2 md:p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs md:text-sm">
                 {error}
               </div>
             )}
 
             {uploading && (
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-purple-600">
-                  <Loader2 size={16} className="animate-spin" />
+                <div className="flex items-center gap-2 text-xs md:text-sm text-purple-600">
+                  <Loader2 size={14} md:size={16} className="animate-spin" />
                   <span>上传中... {uploadProgress}%</span>
                 </div>
-                <div className="w-full bg-purple-100 rounded-full h-2 overflow-hidden">
+                <div className="w-full bg-purple-100 rounded-full h-1.5 md:h-2 overflow-hidden">
                   <div
                     className="bg-gradient-to-r from-purple-400 to-pink-400 h-full transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
@@ -256,7 +255,7 @@ export default function AudioUpload({ isOpen, onClose, onUploadSuccess }) {
             <button
               type="submit"
               disabled={uploading || !file}
-              className="w-full py-3 bg-gradient-to-r from-purple-400 to-pink-400 text-white font-medium rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2.5 md:py-3 bg-gradient-to-r from-purple-400 to-pink-400 text-white font-medium rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
             >
               {uploading ? '上传中...' : '上传音乐'}
             </button>

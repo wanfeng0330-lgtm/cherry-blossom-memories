@@ -73,31 +73,31 @@ export default function Timeline({
 
   return (
     <div className="z-50 bg-gradient-to-t from-white/95 via-white/90 to-transparent backdrop-blur-sm">
-      <div className="max-w-5xl mx-auto px-4 py-6">
+      <div className="max-w-5xl mx-auto px-3 py-4 md:px-4 md:py-6">
         {/* 标题和统计 */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🌸</span>
-            <h3 className="text-cherry-dark font-bold text-lg">
+        <div className="flex items-center justify-between mb-2 md:mb-3">
+          <div className="flex items-center gap-2 md:gap-3">
+            <span className="text-xl md:text-2xl">🌸</span>
+            <h3 className="text-cherry-dark font-bold text-sm md:text-lg">
               {selectedYear}年 {getSelectedMonthName()}
             </h3>
           </div>
-          <div className="flex items-center gap-2 bg-white/80 rounded-full px-4 py-1 shadow-md">
-            <span className="text-cherry-bright">💕</span>
-            <span className="text-sm font-medium text-cherry-dark">
-              {monthStats[selectedMonth - 1]?.count || 0} 张回忆
+          <div className="flex items-center gap-1 md:gap-2 bg-white/80 rounded-full px-2 md:px-4 py-1 shadow-md">
+            <span className="text-cherry-bright text-sm md:text-base">💕</span>
+            <span className="text-xs md:text-sm font-medium text-cherry-dark">
+              {monthStats[selectedMonth - 1]?.count || 0} 张
             </span>
           </div>
         </div>
 
         {/* 年份选择 */}
-        <div className="flex items-center justify-center gap-4 mb-4">
+        <div className="flex items-center justify-center gap-2 md:gap-4 mb-2 md:mb-4">
           <button
             onClick={() => handleYearChange(-1)}
             disabled={selectedYear <= START_YEAR}
-            className="p-2 rounded-full hover:bg-pink-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-1 md:p-2 rounded-full hover:bg-pink-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            <ChevronLeft size={20} className="text-cherry-dark" />
+            <ChevronLeft size={16} md:size={20} className="text-cherry-dark" />
           </button>
 
           {yearInputMode ? (
@@ -106,13 +106,13 @@ export default function Timeline({
                 type="number"
                 value={tempYear}
                 onChange={(e) => setTempYear(e.target.value)}
-                className="w-20 px-3 py-1 border-2 border-pink-200 rounded-full text-center focus:border-pink-400 focus:outline-none"
+                className="w-16 md:w-20 px-2 md:px-3 py-1 border-2 border-pink-200 rounded-full text-center focus:border-pink-400 focus:outline-none text-sm md:text-base"
                 min={START_YEAR}
                 autoFocus
               />
               <button
                 type="submit"
-                className="px-3 py-1 bg-pink-400 text-white rounded-full text-sm hover:bg-pink-500"
+                className="px-2 md:px-3 py-1 bg-pink-400 text-white rounded-full text-xs md:text-sm hover:bg-pink-500"
               >
                 确定
               </button>
@@ -123,7 +123,7 @@ export default function Timeline({
                 setTempYear(selectedYear);
                 setYearInputMode(true);
               }}
-              className="px-6 py-2 bg-white/80 rounded-full shadow-md font-medium text-cherry-dark hover:bg-pink-50 transition-colors"
+              className="px-4 md:px-6 py-1.5 md:py-2 bg-white/80 rounded-full shadow-md font-medium text-cherry-dark hover:bg-pink-50 transition-colors text-sm md:text-base"
             >
               {selectedYear}
             </button>
@@ -131,14 +131,14 @@ export default function Timeline({
 
           <button
             onClick={() => handleYearChange(1)}
-            className="p-2 rounded-full hover:bg-pink-100 transition-colors"
+            className="p-1 md:p-2 rounded-full hover:bg-pink-100 transition-colors"
           >
-            <ChevronRight size={20} className="text-cherry-dark" />
+            <ChevronRight size={16} md:size={20} className="text-cherry-dark" />
           </button>
         </div>
 
         {/* 月份滚动条 */}
-        <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-thin scrollbar-thumb-cherry-pink scrollbar-track-cherry-light">
+        <div className="flex gap-2 md:gap-2 overflow-x-auto pb-2 md:pb-3 scrollbar-thin scrollbar-thumb-cherry-pink scrollbar-track-cherry-light">
           {visibleMonths.map((month, index) => {
             const monthNum = selectedYear === START_YEAR ? index + START_MONTH : index + 1;
             const statsIndex = monthNum - 1;
@@ -150,24 +150,24 @@ export default function Timeline({
                 key={month}
                 onClick={() => handleMonthSelect(monthNum)}
                 className={`
-                  relative flex-shrink-0 px-4 py-2 rounded-xl transition-all duration-300
+                  relative flex-shrink-0 px-4 md:px-4 py-3 md:py-2 rounded-xl md:rounded-xl transition-all duration-300
                   ${isSelected
-                    ? 'bg-gradient-to-r from-pink-400 to-rose-400 text-white shadow-lg scale-110'
+                    ? 'bg-gradient-to-r from-pink-400 to-rose-400 text-white shadow-lg scale-105 md:scale-110'
                     : 'bg-white/80 text-cherry-dark hover:bg-pink-100 shadow-md'
                   }
                 `}
               >
                 {/* 选中时的光晕 */}
                 {isSelected && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-pink-100 to-rose-100 opacity-50 rounded-xl animate-pulse" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-pink-100 to-rose-100 opacity-50 rounded-xl md:rounded-xl animate-pulse" />
                 )}
 
-                <span className="relative z-10 text-sm font-medium">{month}</span>
+                <span className="relative z-10 text-sm md:text-sm font-medium">{month}</span>
 
                 {/* 照片数量 */}
                 {count > 0 && (
                   <span className={`
-                    absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold
+                    absolute -top-1 -right-1 md:-top-1 md:-right-1 w-5 h-5 md:w-5 md:h-5 rounded-full text-xs md:text-xs flex items-center justify-center font-bold
                     ${isSelected ? 'bg-white text-pink-500' : 'bg-pink-400 text-white'}
                   `}>
                     {count > 9 ? '9+' : count}
@@ -179,7 +179,7 @@ export default function Timeline({
         </div>
 
         {/* 快速年份跳转 */}
-        <div className="flex justify-center gap-2 mt-2 flex-wrap">
+        <div className="flex justify-center gap-1 md:gap-2 mt-1 md:mt-2 flex-wrap">
           {Array.from({ length: 10 }, (_, i) => START_YEAR + i).map((year) => (
             <button
               key={year}
@@ -189,7 +189,7 @@ export default function Timeline({
                   onMonthChange(START_MONTH, year);
                 }
               }}
-              className={`px-3 py-1 rounded-full text-xs transition-colors ${
+              className={`px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs transition-colors ${
                 selectedYear === year
                   ? 'bg-pink-400 text-white'
                   : 'bg-white/60 text-cherry-dark hover:bg-pink-100'

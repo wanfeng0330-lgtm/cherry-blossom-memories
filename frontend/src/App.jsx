@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useStore } from './store/useStore';
+import { List } from 'lucide-react';
 import Header from './components/UI/Header';
 import Timeline from './components/Timeline/Timeline';
-import PhotoUpload from './components/Upload/PhotoUpload';
 import PhotoModal from './components/UI/PhotoModal';
-import AudioUpload from './components/UI/AudioUpload';
+import PhotoListView from './components/UI/PhotoListView';
 import MusicPlayer from './components/UI/MusicPlayer';
 import HeartEffect from './components/UI/HeartEffect';
 import PasswordProtection from './components/UI/PasswordProtection';
@@ -84,26 +84,19 @@ function PhotoCard({ photo, index, total, onClick, x, y, width, height }) {
 export default function App() {
   const [isReady, setIsReady] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isListViewOpen, setIsListViewOpen] = useState(false);
+  const photoPositionsRef = useRef(null);
 
   const {
     photos,
     selectedMonth,
     selectedYear,
-    isUploadModalOpen,
     isPhotoModalOpen,
-    isAudioUploadModalOpen,
     selectedPhoto,
     fetchPhotos,
     fetchAudios,
-    openUploadModal,
-    closeUploadModal,
     openPhotoModal,
     closePhotoModal,
-    openAudioUploadModal,
-    closeAudioUploadModal,
-    uploadPhoto,
-    updatePhoto,
-    deletePhoto,
     getMonthStats,
     setSelectedMonth,
     setSelectedYear
@@ -169,8 +162,16 @@ export default function App() {
   // 获取月份统计
   const monthStats = getMonthStats();
 
-  // 计算照片在树周围的位置
+  // 计算照片位置的缓存key
+  const currentPhotosKey = `${selectedYear}-${selectedMonth}-${photos.length}`;
+
+  // 计算照片在树周围的位置（只在月份或照片数量变化时重新计算）
   const getPhotoPositions = () => {
+    // 如果缓存存在且key相同，直接返回缓存
+    if (photoPositionsRef.current && photoPositionsRef.current.key === currentPhotosKey) {
+      return photoPositionsRef.current.positions;
+    }
+
     const positions = [];
     const currentMonthPhotos = photos.filter(p => {
       const date = new Date(p.date);
@@ -178,29 +179,68 @@ export default function App() {
     });
 
     const count = currentMonthPhotos.length;
-    if (count === 0) return positions;
+    if (count === 0) {
+      photoPositionsRef.current = { key: currentPhotosKey, positions };
+      return positions;
+    }
 
-    // 根据照片数量动态计算大小和半径
-    const minSize = 90;
-    const maxSize = 200;
-    const size = Math.max(minSize, Math.min(maxSize, Math.floor(600 / Math.sqrt(count))));
+    // 检测是否为移动端
+    const isMobile = window.innerWidth < 768;
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
 
+    // ========== 圆形布局（套圈策略）==========
+    // 根据照片数量决定半径和大小
+    let minSize, maxSize, baseRadius, radiusStep;
+
+    if (isMobile) {
+      // 移动端参数
+      if (count <= 6) {
+        minSize = 85; maxSize = 100; baseRadius = 100; radiusStep = 0;
+      } else if (count <= 10) {
+        minSize = 70; maxSize = 90; baseRadius = 110; radiusStep = 0;
+      } else if (count <= 15) {
+        minSize = 60; maxSize = 80; baseRadius = 100; radiusStep = 55;
+      } else if (count <= 20) {
+        minSize = 50; maxSize = 70; baseRadius = 95; radiusStep = 50;
+      } else {
+        minSize = 45; maxSize = 65; baseRadius = 90; radiusStep = 45;
+      }
+    } else {
+      // 桌面端参数
+      if (count <= 8) {
+        minSize = 110; maxSize = 160; baseRadius = 180; radiusStep = 0;
+      } else if (count <= 15) {
+        minSize = 90; maxSize = 130; baseRadius = 190; radiusStep = 0;
+      } else if (count <= 25) {
+        minSize = 80; maxSize = 120; baseRadius = 170; radiusStep = 80;
+      } else if (count <= 35) {
+        minSize = 65; maxSize = 100; baseRadius = 160; radiusStep = 70;
+      } else {
+        minSize = 55; maxSize = 85; baseRadius = 150; radiusStep = 60;
+      }
+    }
+
+    const size = Math.max(minSize, Math.min(maxSize, Math.floor((isMobile ? 380 : 600) / Math.sqrt(count))));
     const width = size;
     const height = Math.floor(size * 0.75);
 
-    const minRadius = 160;
-    const maxRadius = 320;
-    const radius = Math.max(minRadius, Math.min(maxRadius, Math.floor(180 + count * 12)));
-
-    const angleStep = 360 / count;
+    // 心形缩放因子
+    const heartScale = isMobile ? 10 : 16;
 
     currentMonthPhotos.forEach((photo, index) => {
-      const angle = index * angleStep;
-      const radian = (angle * Math.PI) / 180;
+      // 心形参数方程
+      // t 从 0 到 2π
+      const t = (index / count) * 2 * Math.PI;
 
-      const randomOffset = 20;
-      const x = Math.cos(radian) * radius + (Math.random() - 0.5) * randomOffset;
-      const y = Math.sin(radian) * radius * 0.5 + (Math.random() - 0.5) * randomOffset;
+      // 心形公式
+      const heartX = 16 * Math.pow(Math.sin(t), 3);
+      const heartY = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)); // y轴翻转
+
+      const randomOffset = isMobile ? 10 : 15;
+
+      const x = heartX * heartScale + (Math.random() - 0.5) * randomOffset;
+      const y = heartY * heartScale * 0.55 + (Math.random() - 0.5) * randomOffset; // 压扁y轴让心形更自然
 
       positions.push({
         photo,
@@ -211,6 +251,8 @@ export default function App() {
       });
     });
 
+    // 缓存结果
+    photoPositionsRef.current = { key: currentPhotosKey, positions };
     return positions;
   };
 
@@ -225,21 +267,6 @@ export default function App() {
   // 处理照片点击
   const handlePhotoClick = (photo) => {
     openPhotoModal(photo);
-  };
-
-  // 处理上传
-  const handleUpload = async (file, date, caption) => {
-    await uploadPhoto(file, date, caption);
-  };
-
-  // 处理照片更新
-  const handleUpdate = async (id, updates) => {
-    await updatePhoto(id, updates);
-  };
-
-  // 处理删除
-  const handleDelete = async (id) => {
-    await deletePhoto(id);
   };
 
   const photoPositions = getPhotoPositions();
@@ -304,16 +331,13 @@ export default function App() {
         </div>
 
         {/* 装饰性圆圈背景 */}
-        <div className="fixed top-20 left-10 w-32 h-32 rounded-full bg-pink-200/20 blur-3xl pointer-events-none" />
-        <div className="fixed top-40 right-20 w-48 h-48 rounded-full bg-rose-200/20 blur-3xl pointer-events-none" />
-        <div className="fixed bottom-40 left-20 w-40 h-40 rounded-full bg-pink-300/20 blur-3xl pointer-events-none" />
-        <div className="fixed bottom-20 right-10 w-36 h-36 rounded-full bg-rose-300/20 blur-3xl pointer-events-none" />
+        <div className="fixed top-20 left-5 md:left-10 w-20 md:w-32 h-20 md:h-32 rounded-full bg-pink-200/20 blur-3xl pointer-events-none" />
+        <div className="fixed top-40 right-5 md:right-20 w-24 md:w-48 h-24 md:h-48 rounded-full bg-rose-200/20 blur-3xl pointer-events-none" />
+        <div className="fixed bottom-40 left-5 md:left-20 w-20 md:w-40 h-20 md:h-40 rounded-full bg-pink-300/20 blur-3xl pointer-events-none" />
+        <div className="fixed bottom-20 right-5 md:right-10 w-20 md:w-36 h-20 md:h-36 rounded-full bg-rose-300/20 blur-3xl pointer-events-none" />
 
         {/* 头部 */}
-        <Header
-          onUploadClick={openUploadModal}
-          onAudioUploadClick={openAudioUploadModal}
-        />
+        <Header />
 
         {/* 主场景区域 */}
         <div className="relative flex-1 flex items-center justify-center z-10 min-h-0">
@@ -323,9 +347,9 @@ export default function App() {
           {/* 照片卡片 */}
           {photoPositions.map(({ photo, x, y, width, height }) => (
             <PhotoCard
-              key={photo._id}
+              key={photo.id}
               photo={photo}
-              index={photoPositions.findIndex(p => p.photo._id === photo._id)}
+              index={photoPositions.findIndex(p => p.photo.id === photo.id)}
               total={photoPositions.length}
               onClick={handlePhotoClick}
               x={x}
@@ -337,11 +361,10 @@ export default function App() {
 
           {/* 提示文字 */}
           {photoPositions.length === 0 && (
-            <div className="absolute bottom-20 text-center z-10">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
-                <p className="text-2xl mb-2">🌸</p>
-                <p className="text-pink-500 text-lg font-medium">这个月份还没有照片哦~</p>
-                <p className="text-pink-400 text-sm mt-2">点击右上角"上传"按钮添加回忆</p>
+            <div className="absolute bottom-16 md:bottom-20 text-center z-10 px-4">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-xl">
+                <p className="text-xl md:text-2xl mb-2">🌸</p>
+                <p className="text-pink-500 text-base md:text-lg font-medium">这个月份还没有照片哦~</p>
               </div>
             </div>
           )}
@@ -357,27 +380,30 @@ export default function App() {
         />
       </div>
 
-      {/* 上传弹窗 */}
-      <PhotoUpload
-        isOpen={isUploadModalOpen}
-        onClose={closeUploadModal}
-        onUpload={handleUpload}
-      />
-
       {/* 照片详情弹窗 */}
       <PhotoModal
         photo={selectedPhoto}
         isOpen={isPhotoModalOpen}
         onClose={closePhotoModal}
-        onUpdate={handleUpdate}
-        onDelete={handleDelete}
       />
 
-      {/* 音频上传弹窗 */}
-      <AudioUpload
-        isOpen={isAudioUploadModalOpen}
-        onClose={closeAudioUploadModal}
-        onUploadSuccess={fetchAudios}
+      {/* 列表视图按钮 */}
+      <button
+        onClick={() => setIsListViewOpen(true)}
+        className="fixed right-3 md:right-6 top-20 md:top-24 z-40 bg-white/90 backdrop-blur-sm p-2 md:p-3 rounded-full shadow-lg hover:bg-pink-50 transition-all hover:scale-110"
+        title="列表视图"
+      >
+        <List size={20} className="text-pink-500" />
+      </button>
+
+      {/* 照片列表视图 */}
+      <PhotoListView
+        isOpen={isListViewOpen}
+        photos={photos}
+        selectedYear={selectedYear}
+        selectedMonth={selectedMonth}
+        onClose={() => setIsListViewOpen(false)}
+        onPhotoClick={openPhotoModal}
       />
 
       {/* 音乐播放器 */}
@@ -387,8 +413,8 @@ export default function App() {
       <HeartEffect />
 
       {/* 底部印记 */}
-      <div className="fixed bottom-2 left-0 right-0 text-center z-40 pointer-events-none">
-        <p className="text-xs text-pink-400/70">
+      <div className="fixed bottom-1 md:bottom-2 left-0 right-0 text-center z-40 pointer-events-none">
+        <p className="text-[10px] md:text-xs text-pink-400/70">
           💕 郑涵予 & 张远欣 的浪漫时光 💕
         </p>
       </div>

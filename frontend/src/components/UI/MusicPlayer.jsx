@@ -100,7 +100,7 @@ export default function MusicPlayer() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-xl border border-pink-100 max-w-xs">
+    <div className="fixed bottom-2 right-2 md:bottom-4 md:right-4 z-40 bg-white/95 backdrop-blur-sm p-2 md:p-4 rounded-xl md:rounded-2xl shadow-xl border border-pink-100 max-w-[200px] md:max-w-xs">
       <audio
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}
@@ -110,65 +110,65 @@ export default function MusicPlayer() {
 
       {/* Progress bar with seek */}
       <div
-        className="w-full h-2 bg-pink-100 rounded-full overflow-hidden mb-3 cursor-pointer relative group"
+        className="w-full h-1.5 md:h-2 bg-pink-100 rounded-full overflow-hidden mb-2 md:mb-3 cursor-pointer relative group"
         onClick={handleSeek}
       >
         <div
           className="h-full bg-gradient-to-r from-pink-400 to-rose-400 transition-all duration-100 relative"
           style={{ width: `${progress}%` }}
         >
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 md:w-3 h-2 md:h-3 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       </div>
 
       {/* Time display */}
-      <div className="flex justify-between text-xs text-gray-500 mb-2 px-1">
+      <div className="flex justify-between text-[10px] md:text-xs text-gray-500 mb-1.5 md:mb-2 px-1">
         <span>{formatTime(currentTime)}</span>
         <span>{formatTime(duration)}</span>
       </div>
 
       {/* Track info */}
-      <div className="text-center mb-3">
-        <p className="text-sm font-medium text-gray-800 truncate">
+      <div className="text-center mb-2 md:mb-3">
+        <p className="text-xs md:text-sm font-medium text-gray-800 truncate">
           {currentTrack?.title || 'Unknown Track'}
         </p>
-        <p className="text-xs text-gray-500 truncate">
+        <p className="text-[10px] md:text-xs text-gray-500 truncate">
           {currentTrack?.artist || 'Unknown Artist'}
         </p>
         {tracks.length > 1 && (
-          <p className="text-xs text-pink-400 mt-1">
+          <p className="text-[10px] md:text-xs text-pink-400 mt-0.5 md:mt-1">
             {currentTrackIndex + 1} / {tracks.length}
           </p>
         )}
       </div>
 
       {/* Controls */}
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center justify-center gap-1 md:gap-2">
         <button
           onClick={playPrevious}
           disabled={tracks.length <= 1}
-          className="p-2 rounded-full hover:bg-pink-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          className="p-1 md:p-2 rounded-full hover:bg-pink-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          <SkipBack size={18} className="text-gray-700" />
+          <SkipBack size={14} md:size={18} className="text-gray-700" />
         </button>
 
         <button
           onClick={togglePlay}
-          className="p-3 rounded-full bg-gradient-to-r from-pink-400 to-rose-400 shadow-lg hover:shadow-xl transition-all hover:scale-105"
+          className="p-2 md:p-3 rounded-full bg-gradient-to-r from-pink-400 to-rose-400 shadow-lg hover:shadow-xl transition-all hover:scale-105"
         >
           {isPlaying ? (
-            <Pause size={20} className="text-white" />
+            <Pause size={16} md:size={20} className="text-white" />
           ) : (
-            <Play size={20} className="text-white ml-0.5" />
+            <Play size={16} md:size={20} className="text-white ml-0.5" />
           )}
         </button>
 
         <button
           onClick={playNext}
           disabled={tracks.length <= 1}
-          className="p-2 rounded-full hover:bg-pink-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          className="p-1 md:p-2 rounded-full hover:bg-pink-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          <SkipForward size={18} className="text-gray-700" />
+          <SkipForward size={14} md:size={18} className="text-gray-700" />
         </button>
       </div>
     </div>

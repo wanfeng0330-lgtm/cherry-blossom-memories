@@ -194,4 +194,26 @@ body {
   .canvas-container {
     height: 60vh;
   }
+
+  /* 移动端优化 */
+  html, body {
+    font-size: 14px;
+  }
+
+  /* 减小装饰元素 */
+  .falling-petal {
+    font-size: 0.8em;
+  }
+
+  /* 优化触摸交互 */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  html, body {
+    font-size: 12px;
+  }
 }
