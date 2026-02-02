@@ -1,0 +1,26 @@
+{
+  "name": "cherry-blossom-memories-tcb",
+  "version": "1.0.0",
+  "description": "樱花树时光机 - CloudBase部署版本",
+  "main": "cloudbaserc.json",
+  "scripts": {
+    "deploy": "tcb functions:deploy --force",
+    "deploy:dev": "tcb functions:deploy --force -e dev",
+    "deploy:prod": "tcb functions:deploy --force -e prod",
+    "login": "tcb login",
+    "init": "tcb init"
+  },
+  "keywords": [
+    "cherry-blossom",
+    "cloud-base",
+    "serverless"
+  ],
+  "dependencies": {
+    "@cloudbase/framework-plugin-function": "^1.2.3",
+    "@cloudbase/framework-plugin-storage": "^1.2.3",
+    "@cloudbase/framework-plugin-database": "^1.2.3"
+  },
+  "devDependencies": {
+    "@cloudbase/cli": "^1.12.0"
+  }
+}

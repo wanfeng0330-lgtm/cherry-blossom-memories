@@ -1,0 +1,19 @@
+{
+  "name": "main",
+  "version": "1.0.0",
+  "description": "主服务器云函数",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "serverless-http": "^3.2.0",
+    "wx-server-sdk": "~2.6.3",
+    "mongoose": "^8.0.3",
+    "bcrypt": "^6.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

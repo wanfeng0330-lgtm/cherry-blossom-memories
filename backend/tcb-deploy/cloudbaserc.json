@@ -1,0 +1,54 @@
+{
+  "version": "2.0",
+  "name": "cherry-blossom-memories",
+  "description": "樱花树时光机 - 后端服务",
+  "appid": "your-appid",
+  "envId": "your-env-id",
+  "region": "ap-guangzhou",
+  "runtime": "Nodejs16.13",
+  "functionRoot": "./functions",
+  "functions": [
+    {
+      "name": "main-server",
+      "description": "主服务器",
+      "handler": "index.main_handler",
+      "timeout": 60,
+      "memorySize": 512,
+      "envVariables": {
+        "NODE_ENV": "production"
+      },
+      "ignore": [
+        ".git",
+        ".gitignore",
+        "node_modules",
+        ".env"
+      ]
+    },
+    {
+      "name": "upload-photo",
+      "description": "照片上传",
+      "handler": "upload.main_handler",
+      "timeout": 120,
+      "memorySize": 1024,
+      "envVariables": {
+        "NODE_ENV": "production"
+      }
+    }
+  ],
+  "framework": {
+    "name": "node",
+    "plugins": {
+      "function": {
+        "use": "@cloudbase/framework-plugin-function",
+        "inputs": {}
+      },
+      "storage": {
+        "use": "@cloudbase/framework-plugin-storage",
+        "inputs": {
+          "cloudPath": "/photos",
+          "localPath": "./uploads"
+        }
+      }
+    }
+  }
+}
