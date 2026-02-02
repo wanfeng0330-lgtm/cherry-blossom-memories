@@ -6,6 +6,26 @@
 
 由于这是一个全栈应用（前端+后端），我们需要分别部署：
 
+### 方案 0：七牛云存储 + 任意后端（最推荐，国内访问快）
+
+**前端：** Cloudflare Pages / Vercel
+**后端：** 任意平台（Render/CloudBase/VPS）
+**照片存储：** 七牛云（免费1GB存储 + 1GB流量）
+**数据库：** MongoDB Atlas（免费500MB）
+
+**详细文档：** `backend/QINIU_SETUP.md`
+
+**快速配置：**
+```bash
+cd backend
+# Windows
+setup-qiniu.bat
+
+# Mac/Linux
+chmod +x setup-qiniu.sh
+./setup-qiniu.sh
+```
+
 ### 方案 A：免费部署（推荐新手）
 
 **前端：** Vercel
