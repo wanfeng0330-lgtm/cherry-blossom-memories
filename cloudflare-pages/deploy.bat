@@ -1,0 +1,26 @@
+@echo off
+echo === 樱花树时光机 - Cloudflare Pages 快速部署 ===
+echo.
+echo 部署前准备：
+echo 1. 确保已登录Cloudflare账户
+echo 2. 安装 Wrangler CLI：npm install -g wrangler
+echo.
+echo 请按以下步骤操作：
+echo.
+echo 第一步：上传文件夹
+echo   登录 https://dash.cloudflare.com/
+echo   进入 Workers ^& Pages ^> Pages
+echo   点击 'Upload assets' 按钮
+echo   选择 cloudflare-pages 文件夹
+echo   点击 'Deploy'
+echo.
+echo 第二步：配置环境变量
+echo   进入项目设置 ^> Environment variables
+echo   添加：BACKEND_URL = https://你的后端API地址
+echo.
+echo 第三步：测试访问
+echo   部署完成后，Cloudflare会提供访问URL
+echo   例如：https://your-project.pages.dev
+echo.
+echo 完成！ 🌸
+pause

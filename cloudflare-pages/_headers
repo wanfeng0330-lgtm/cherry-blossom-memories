@@ -1,0 +1,32 @@
+# Cloudflare Pages构建配置
+
+[build]
+  # 构建命令（如果需要）
+  command = "echo 'No build required'"
+
+[build.environment]
+  # Node.js版本
+  NODE_VERSION = "18"
+
+[functions]
+  # Functions 配置
+  node_compat = true
+
+[[redirects]]
+  # API重定向到后端
+  from = "/api/*"
+  to = "https://your-backend-url.com/api/:splat"
+  status = 200
+  force = true
+
+[[headers]]
+  # 静态资源缓存
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  # HTML文件缓存
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
