@@ -10,6 +10,14 @@
     "build:frontend": "cd frontend && npm run build",
     "start": "cd backend && npm start"
   },
-  "keywords": ["cherry-blossom", "memories", "couple"],
-  "author": "郑涵予 & 张远欣"
+  "keywords": [
+    "cherry-blossom",
+    "memories",
+    "couple"
+  ],
+  "author": "郑涵予 & 张远欣",
+  "devDependencies": {
+    "archiver": "^7.0.1",
+    "jszip": "^3.10.1"
+  }
 }
