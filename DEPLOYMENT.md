@@ -183,4 +183,102 @@ git push gitee main
 
 ---
 
+## 🇨🇳 方案 C：腾讯云 CloudBase 部署（推荐，国内访问快）
+
+### 步骤 1：准备 CloudBase 环境
+
+1. 访问 [腾讯云 CloudBase](https://console.cloud.tencent.com/tcb)
+2. 注册并登录（免费）
+3. 开通 CloudBase 服务
+4. 安装 CLI 工具：
+   ```bash
+   npm install -g @cloudbase/cli
+   ```
+5. 登录 CloudBase：
+   ```bash
+   tcb login
+   ```
+
+### 步骤 2：创建 CloudBase 环境
+
+1. 点击"新建环境"
+2. 配置：
+   - **环境名称**：`cherry-blossom-memories`
+   - **套餐**：基础版（免费）
+   - **地域**：选择离你最近的（如 ap-guangzhou）
+3. 创建后复制环境 ID（ENV_ID）
+
+### 步骤 3：配置环境变量
+
+```bash
+cd backend/tcb-deploy
+cp .env.example .env
+```
+
+编辑 `.env` 文件，填写：
+```env
+ENV_ID=your_env_id              # CloudBase 环境ID
+SECRET_ID=your_secret_id        # 访问凭证 ID
+SECRET_KEY=your_secret_key      # 访问凭证密钥
+REGION=ap-guangzhou             # 地域
+MONGODB_URI=mongodb+srv://...   # MongoDB 连接字符串
+```
+
+### 步骤 4：部署云函数
+
+**Windows：**
+```cmd
+deploy.bat
+```
+
+**Mac/Linux：**
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
+
+或手动部署：
+```bash
+tcb functions:deploy --force
+```
+
+### 步骤 5：配置云存储
+
+1. 在 CloudBase 控制台进入"存储" → "云存储"
+2. 创建存储空间：
+   - `photos` - 照片存储
+   - `audio` - 音频存储
+3. 设置权限为"公有读私有写"
+
+### 步骤 6：获取 API 地址
+
+1. 进入CloudBase控制台"云函数"
+2. 选择函数 → 点击"访问配置"
+3. 复制 HTTP 访问路径
+4. 格式：`https://your-env-id.service.tcloudbase.com`
+
+### 步骤 7：更新前端并部署
+
+编辑 `single-file-deploy/index.html`：
+```javascript
+const API_BASE_URL = 'https://your-env-id.service.tcloudbase.com/api';
+```
+
+然后将 `single-file-deploy` 文件夹上传到 Cloudflare Pages。
+
+### CloudBase 费用
+
+**免费额度（每月）：**
+- ✅ 云函数调用：100万次
+- ✅ 云函数运行时间：40万 GBs
+- ✅ 云存储：5GB
+- ✅ 流量：5GB
+- ✅ 数据库：2GB
+
+**个人使用完全免费！**
+
+详细文档：`backend/tcb-deploy/README.md`
+
+---
+
 部署完成后，您就可以从手机浏览器访问您的网站了！🌸
